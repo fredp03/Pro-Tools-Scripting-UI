@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pro Tools Track Rename Analysis</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #3A3939;
+            color: #BCBCBC;
+            overflow-x: auto;
+        }
+
+        /* Main Screen Container */
+        .screen-component {
+            position: relative;
+            background: #3A3939;
+            overflow-x: auto;
+            border-radius: 1px;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        /* Track Selection Bottom Bar */
+        .track-selection {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 73px;
+            background: #292929;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 26px;
+            z-index: 100;
+        }
+
+        .nav-item {
+            color: #898989;
+            font-size: 16px;
+            font-weight: 400;
+        }
+
+        .selected-view {
+            position: relative;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            width: 147px;
+        }
+
+        .track-assignment {
+            color: #ADADAD;
+            font-size: 16px;
+            font-weight: 500;
+            padding: 0 4px;
+        }
+
+        .selected-indicator {
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: #7826E7;
+            border-radius: 5px;
+        }
+
+        .nav-button {
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            flex-shrink: 0;
+        }
+
+        .nav-button svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .nav-back {
+            position: absolute;
+            left: 26px;
+        }
+
+        .nav-forward {
+            position: absolute;
+            right: 26px;
+        }
+
+        .nav-center-group {
+            display: flex;
+            align-items: center;
+            gap: 193px;
+        }
+
+        /* Page Scroll Indicator */
+        .page-scroll-indicator {
+            position: absolute;
+            left: -32px;
+            top: 104px;
+            width: 12px;
+            height: 687px;
+            z-index: 50;
+        }
+
+        .scroll-track {
+            width: 12px;
+            height: 100%;
+            background: #494949;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .scroll-thumb {
+            width: 10px;
+            height: 27.37%;
+            background: #313131;
+            border-radius: 4px;
+            position: absolute;
+            top: 1px;
+            left: 1px;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            display: flex;
+            justify-content: center;
+            gap: 93px;
+            padding: 111px 20px 100px;
+            min-height: 100vh;
+        }
+
+        /* Track Names Sections */
+        .track-names-section {
+            width: 601px;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .track-names-section.previous .page-scroll-indicator {
+            display: block;
+        }
+
+        .track-names-section.new .page-scroll-indicator {
+            display: none;
+        }
+
+        .section-title {
+            color: #BCBCBC;
+            font-size: 20px;
+            font-family: 'Instrument Sans', Inter, sans-serif;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 104px;
+        }
+
+        .track-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: 687px;
+            overflow: hidden;
+        }
+
+        /* Track Components */
+        .track-component {
+            height: 39px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding: 0 42px;
+            position: relative;
+        }
+
+        .track-component.previous {
+            background: #A8987A;
+        }
+
+        .track-component.new {
+            background: #8EA87A;
+        }
+
+        .track-name {
+            color: black;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        /* Responsive Design */
+        
+        /* Mobile/Narrow - up to 934px (based on breakpoint-2.html) */
+        @media (max-width: 934px) {
+            .page-scroll-indicator {
+                left: -37px;
+                top: 104px;
+                width: 6px;
+                height: 687px;
+            }
+
+            .scroll-track {
+                width: 6px;
+                height: 100%;
+            }
+
+            .scroll-thumb {
+                width: 5px;
+                height: 27.37%;
+            }
+
+            .main-content {
+                gap: 50px;
+                padding: 111px 20px 100px;
+            }
+
+            .track-names-section {
+                width: 325px;
+            }
+
+            .section-title.previous {
+                text-align: left;
+                padding-left: 33px;
+            }
+
+            .section-title.new {
+                text-align: left;
+                padding-left: 79px;
+            }
+
+            .nav-center-group {
+                gap: 96px;
+            }
+        }
+
+        /* Medium - 935px to 1670px (based on breakpoint-3.html) */
+        @media (min-width: 935px) and (max-width: 1670px) {
+            .screen-component {
+                min-height: 792px;
+            }
+
+            .page-scroll-indicator {
+                left: -32px;
+                top: 74px;
+                width: 12px;
+                height: 487px;
+            }
+
+            .scroll-track {
+                width: 12px;
+                height: 100%;
+            }
+
+            .scroll-thumb {
+                width: 10px;
+                height: 27.37%;
+            }
+
+            .main-content {
+                padding: 79px 20px 100px;
+                gap: 89px;
+            }
+
+            .track-names-section {
+                width: 581px;
+            }
+
+            .track-list {
+                height: 487px;
+            }
+
+            .section-title {
+                margin-bottom: 74px;
+            }
+
+            .section-title.previous {
+                text-align: left;
+                padding-left: 161px;
+            }
+
+            .section-title.new {
+                text-align: left;
+                padding-left: 207px;
+            }
+
+            .nav-center-group {
+                gap: 150px;
+            }
+        }
+
+        /* Wide - 1671px and above (based on breakpoint-1.html) */
+        @media (min-width: 1671px) {
+            .screen-component {
+                min-height: 1117px;
+            }
+
+            .page-scroll-indicator {
+                left: -32px;
+                top: 104px;
+                width: 12px;
+                height: 687px;
+            }
+
+            .scroll-track {
+                width: 12px;
+                height: 100%;
+            }
+
+            .scroll-thumb {
+                width: 10px;
+                height: 27.37%;
+            }
+
+            .main-content {
+                padding: 111px 20px 100px;
+                gap: 93px;
+            }
+
+            .track-names-section {
+                width: 601px;
+            }
+
+            .track-list {
+                height: 687px;
+            }
+
+            .section-title {
+                margin-bottom: 104px;
+            }
+
+            .section-title.previous {
+                text-align: left;
+                padding-left: 171px;
+            }
+
+            .section-title.new {
+                text-align: left;
+                padding-left: 217px;
+            }
+
+            .nav-center-group {
+                gap: 193px;
+            }
+        }
+
+        /* Accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Focus states for accessibility */
+        .nav-button:focus {
+            outline: 2px solid #7826E7;
+            outline-offset: 2px;
+        }
+
+        .track-component:focus {
+            outline: 2px solid #7826E7;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <main class="screen-component" role="main">
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Previous Track Names -->
+            <section class="track-names-section previous" aria-labelledby="previous-title">
+                <h2 id="previous-title" class="section-title previous">Previous Track Names</h2>
+                <!-- Page Scroll Indicator -->
+                <aside class="page-scroll-indicator" aria-label="Page scroll position">
+                    <div class="scroll-track">
+                        <div class="scroll-thumb"></div>
+                    </div>
+                </aside>
+                <div class="track-list" role="list">
+                    <div class="track-component previous" role="listitem" tabindex="0">
+                        <span class="track-name">acoustic mic</span>
+                    </div>
+                    <div class="track-component previous" role="listitem" tabindex="0">
+                        <span class="track-name">acoustic 2 di</span>
+                    </div>
+                    <div class="track-component previous" role="listitem" tabindex="0">
+                        <span class="track-name">pedal steel 1</span>
+                    </div>
+                    <div class="track-component previous" role="listitem" tabindex="0">
+                        <span class="track-name">pdlsteel 2</span>
+                    </div>
+                    <div class="track-component previous" role="listitem" tabindex="0">
+                        <span class="track-name">distorted guitar 1</span>
+                    </div>
+                    <div class="track-component previous" role="listitem" tabindex="0">
+                        <span class="track-name">dist guitar 2</span>
+                    </div>
+                    <div class="track-component previous" role="listitem" tabindex="0">
+                        <span class="track-name">gtr slide 1</span>
+                    </div>
+                    <div class="track-component previous" role="listitem" tabindex="0">
+                        <span class="track-name">gtr slide 2</span>
+                    </div>
+                    <div class="track-component previous" role="listitem" tabindex="0">
+                        <span class="track-name">riser 1 kinda cool</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- New Track Names -->
+            <section class="track-names-section new" aria-labelledby="new-title">
+                <h2 id="new-title" class="section-title new">New Track Names</h2>
+                <div class="track-list" role="list">
+                    <div class="track-component new" role="listitem" tabindex="0">
+                        <span class="track-name">Acoustic Mic</span>
+                    </div>
+                    <div class="track-component new" role="listitem" tabindex="0">
+                        <span class="track-name">Acoustic DI</span>
+                    </div>
+                    <div class="track-component new" role="listitem" tabindex="0">
+                        <span class="track-name">Pedal Steel 1</span>
+                    </div>
+                    <div class="track-component new" role="listitem" tabindex="0">
+                        <span class="track-name">Pedal Steel 2</span>
+                    </div>
+                    <div class="track-component new" role="listitem" tabindex="0">
+                        <span class="track-name">Distorted Guitar 1</span>
+                    </div>
+                    <div class="track-component new" role="listitem" tabindex="0">
+                        <span class="track-name">Distorted Guitar 2</span>
+                    </div>
+                    <div class="track-component new" role="listitem" tabindex="0">
+                        <span class="track-name">Slide Guitar 1</span>
+                    </div>
+                    <div class="track-component new" role="listitem" tabindex="0">
+                        <span class="track-name">Slide Guitar 2</span>
+                    </div>
+                    <div class="track-component new" role="listitem" tabindex="0">
+                        <span class="track-name">Riser FX 1</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Track Selection Navigation -->
+        <nav class="track-selection" role="navigation" aria-label="Track assignment navigation">
+            <button class="nav-button nav-back" aria-label="Make adjustments">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M28 14C28 7.40034 28 4.1005 25.9497 2.05025C23.8995 0 20.5997 0 14 0C7.40034 0 4.1005 0 2.05025 2.05025C0 4.1005 0 7.40034 0 14C0 20.5997 0 23.8995 2.05025 25.9497C4.1005 28 7.40034 28 14 28C20.5997 28 23.8995 28 25.9497 25.9497C28 23.8995 28 20.5997 28 14ZM22.05 14C22.05 14.5799 21.5799 15.05 21 15.05H13.7349L16.1425 17.4575C16.5525 17.8676 16.5525 18.5324 16.1425 18.9425C15.7324 19.3525 15.0676 19.3525 14.6575 18.9425L10.4575 14.7425C10.2606 14.5455 10.15 14.2785 10.15 14C10.15 13.7215 10.2606 13.4545 10.4575 13.2575L14.6575 9.05754C15.0676 8.64749 15.7324 8.64749 16.1425 9.05754C16.5525 9.46759 16.5525 10.1324 16.1425 10.5425L13.7349 12.95H21C21.5799 12.95 22.05 13.4201 22.05 14ZM5.95 8.4C5.95 7.8201 6.4201 7.35 7 7.35C7.5799 7.35 8.05 7.8201 8.05 8.4V19.6C8.05 20.1799 7.5799 20.65 7 20.65C6.4201 20.65 5.95 20.1799 5.95 19.6V8.4Z" fill="#4B4B4B"/>
+                </svg>
+            </button>
+
+            <div class="nav-center-group">
+                <div class="selected-view">
+                    <span class="track-assignment">Track Assignment</span>
+                    <div class="selected-indicator"></div>
+                </div>
+
+                <span class="nav-item nav-group">Group Assignment</span>
+                <span class="nav-item nav-view">View Assignment</span>
+            </div>
+
+            <button class="nav-button nav-forward" aria-label="Proceed to next step">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M0 14C0 7.40034 0 4.1005 2.05025 2.05025C4.1005 0 7.40034 0 14 0C20.5997 0 23.8995 0 25.9497 2.05025C28 4.1005 28 7.40034 28 14C28 20.5997 28 23.8995 25.9497 25.9497C23.8995 28 20.5997 28 14 28C7.40034 28 4.1005 28 2.05025 25.9497C0 23.8995 0 20.5997 0 14ZM5.95 14C5.95 14.5799 6.4201 15.05 7 15.05H14.2651L11.8575 17.4575C11.4475 17.8676 11.4475 18.5324 11.8575 18.9425C12.2676 19.3525 12.9324 19.3525 13.3425 18.9425L17.5425 14.7425C17.7394 14.5455 17.85 14.2785 17.85 14C17.85 13.7215 17.7394 13.4545 17.5425 13.2575L13.3425 9.05754C12.9324 8.64749 12.2676 8.64749 11.8575 9.05754C11.4475 9.46759 11.4475 10.1324 11.8575 10.5425L14.2651 12.95H7C6.4201 12.95 5.95 13.4201 5.95 14ZM22.05 8.4C22.05 7.8201 21.5799 7.35 21 7.35C20.4201 7.35 19.95 7.8201 19.95 8.4V19.6C19.95 20.1799 20.4201 20.65 21 20.65C21.5799 20.65 22.05 20.1799 22.05 19.6V8.4Z" fill="#4B4B4B"/>
+                </svg>
+            </button>
+        </nav>
+    </main>
+</body>
+</html>

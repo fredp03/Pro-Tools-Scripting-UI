@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pro Tools Scripting UI</title>
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #3A3939;
+            min-height: 100vh;
+        }
+        
+        .screen-component {
+            width: 100vw;
+            height: 100vh;
+            min-height: 800px;
+            position: relative;
+            background: #3A3939;
+            overflow: hidden;
+        }
+        
+        .track-selection {
+            width: 100%;
+            height: 73px;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            background: #292929;
+        }
+        
+        .upload-stems-container {
+            width: 400px;
+            height: 300px;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: #2E2E2E;
+            box-shadow: -1px -1px 2px rgba(18, 18, 18, 0.50);
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+        }
+        
+        .drag-upload-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .upload-text {
+            color: #6A7282;
+            font-size: 14px;
+            font-weight: 400;
+        }
+        
+        .browse-file-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #7552A4;
+            border-radius: 4px;
+            padding: 8px 16px;
+            cursor: pointer;
+            border: none;
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .browse-file-wrapper:hover {
+            background: #8a63b8;
+        }
+    </style>
+</head>
+<body>
+    <main class="screen-component">
+        <div class="track-selection"></div>
+        
+        <div class="upload-stems-container">
+            <div class="drag-upload-container">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M9 0C9.30378 0 9.5911 0.13809 9.78087 0.375305L13.7809 5.37531C14.1259 5.80657 14.056 6.43586 13.6247 6.78087C13.1934 7.12588 12.5641 7.05596 12.2191 6.62469L10 3.85078L10 11C10 11.5523 9.55228 12 9 12C8.44772 12 8 11.5523 8 11L8 3.85078L5.78087 6.62469C5.43586 7.05596 4.80657 7.12588 4.37531 6.78087C3.94404 6.43586 3.87412 5.80657 4.21913 5.37531L8.21913 0.375305C8.4089 0.13809 8.69622 0 9 0ZM0 12C0 10.8954 0.89543 10 2 10H4C4.55228 10 5 10.4477 5 11C5 11.5523 4.55228 12 4 12H2V16H16V12H14C13.4477 12 13 11.5523 13 11C13 10.4477 13.4477 10 14 10H16C17.1046 10 18 10.8954 18 12V16C18 17.1046 17.1046 18 16 18H2C0.895431 18 0 17.1046 0 16V12ZM13 14C13 13.4477 13.4477 13 14 13H14.01C14.5623 13 15.01 13.4477 15.01 14C15.01 14.5523 14.5623 15 14.01 15H14C13.4477 15 13 14.5523 13 14Z" fill="#6A7282"/>
+                </svg>
+                <div class="upload-text">Drag or upload your stems...</div>
+            </div>
+            
+            <button class="browse-file-wrapper">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M4.83341 1.33333C2.90042 1.33333 1.33341 2.90034 1.33341 4.83333C1.33341 6.76633 2.90042 8.33333 4.83341 8.33333C6.76641 8.33333 8.33341 6.76633 8.33341 4.83333C8.33341 2.90034 6.76641 1.33333 4.83341 1.33333ZM0.166748 4.83333C0.166748 2.25601 2.25609 0.166668 4.83341 0.166668C7.41074 0.166668 9.50008 2.25601 9.50008 4.83333C9.50008 7.41066 7.41074 9.5 4.83341 9.5C2.25609 9.5 0.166748 7.41066 0.166748 4.83333ZM8.79594 8.79586C9.02374 8.56805 9.39309 8.56805 9.62089 8.79586L11.6626 10.8375C11.8904 11.0653 11.8904 11.4347 11.6626 11.6625C11.4348 11.8903 11.0654 11.8903 10.8376 11.6625L8.79594 9.62081C8.56813 9.39301 8.56813 9.02366 8.79594 8.79586Z" fill="white"/>
+                </svg>
+                <span>Browse file</span>
+            </button>
+        </div>
+    </main>
+</body>
+</html>

@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Show All Files Screen</title>
+    <style>
+        /* Reset + Base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #3A3939;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* Main container */
+        .show-all-files-screen {
+            background: #3A3939;
+            border-radius: 19px;
+            overflow: hidden;
+            position: relative;
+            width: 935px;
+            height: 1117px;
+            max-width: 95vw;
+            max-height: 95vh;
+        }
+        
+        /* Track columns container */
+        .tracks-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            height: calc(100% - 73px);
+            padding: 215px 6.7% 20px 6.7%;
+            gap: 10%;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        /* 3-column layout adjustments */
+        .tracks-container.three-columns {
+            justify-content: space-evenly;
+            gap: 5%;
+        }
+        
+        .tracks-container.three-columns .track-column {
+            width: 28%;
+        }
+        
+        .track-column {
+            width: 38.2%;
+            min-width: 300px;
+            flex-shrink: 0;
+        }
+        
+        /* Hide third column by default */
+        .track-column-third {
+            display: none;
+        }
+        
+        /* Custom scrollbar styling */
+        .tracks-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .tracks-container::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+        
+        .tracks-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+        
+        .tracks-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Track component styles */
+        .track-component {
+            height: 39px;
+            background: #A8987A;
+            border-radius: 4px;
+            margin-bottom: 42px;
+            display: flex;
+            align-items: center;
+            padding-left: 42px;
+            position: relative;
+            cursor: grab;
+            transition: cursor 0.2s ease;
+        }
+        
+        .track-component:hover {
+            cursor: grab;
+        }
+        
+        .track-component:active {
+            cursor: grabbing;
+        }
+        
+        .track-component:not(:last-child) {
+            margin-bottom: 42px;
+        }
+        
+        .track-component.selected {
+            background: #B5A68A;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.91);
+            outline: 1px rgba(0, 0, 0, 0.16) solid;
+            outline-offset: -1px;
+        }
+        
+        .track-component.edited {
+            background: #ADB58A;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25);
+            outline: 1px rgba(0, 0, 0, 0.16) solid;
+            outline-offset: -1px;
+        }
+        
+        .track-name {
+            color: black;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .track-name.placeholder {
+            color: rgba(0, 0, 0, 0.45);
+        }
+        
+        /* Track editing input */
+        .track-input {
+            background: transparent;
+            border: none;
+            color: black;
+            font-size: 16px;
+            font-weight: 500;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+            width: 100%;
+            outline: none;
+        }
+        
+        .track-input::placeholder {
+            color: rgba(0, 0, 0, 0.45);
+        }
+        
+        /* Track selection footer */
+        .track-selection {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 73px;
+            background: #292929;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 191px;
+        }
+        
+        .selection-tab {
+            color: #898989;
+            font-size: 16px;
+            font-weight: 400;
+            position: relative;
+        }
+        
+        .selection-tab.active {
+            color: #ADADAD;
+            font-weight: 500;
+        }
+        
+        .selection-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -27px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 147px;
+            height: 5px;
+            background: #7826E7;
+            border-radius: 5px;
+        }
+        
+        /* Responsive design */
+        /* 3-column layout for very wide screens */
+        @media (min-width: 1800px) {
+            .show-all-files-screen {
+                width: 100vw;
+                height: 100vh;
+                max-width: 100%;
+                max-height: 100%;
+                border-radius: 0;
+            }
+            
+            .tracks-container {
+                padding: 215px 8% 20px 8%;
+                gap: 4%;
+                justify-content: space-evenly;
+            }
+            
+            .track-column {
+                width: 28%;
+                min-width: 350px;
+            }
+            
+            /* Show third column */
+            .track-column-third {
+                display: block;
+            }
+        }
+        
+        /* 2-column layout for wide screens */
+        @media (min-width: 1400px) and (max-width: 1799px) {
+            .show-all-files-screen {
+                width: 100vw;
+                height: 100vh;
+                max-width: 100%;
+                max-height: 100%;
+                border-radius: 0;
+            }
+            
+            .tracks-container {
+                padding: 215px 14.6% 20px 14.6%;
+                gap: 14.5%;
+            }
+            
+            .track-column {
+                width: 28.1%;
+                min-width: 400px;
+            }
+        }
+        
+        @media (max-width: 800px) {
+            .tracks-container {
+                padding: 180px 4% 20px 4%;
+                gap: 8%;
+            }
+            
+            .track-column {
+                width: 44%;
+                min-width: 280px;
+            }
+            
+            .track-selection {
+                gap: 80px;
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .tracks-container {
+                flex-direction: column;
+                gap: 30px;
+                align-items: center;
+                padding: 120px 5% 20px 5%;
+            }
+            
+            .track-column {
+                width: 90%;
+                max-width: 400px;
+            }
+            
+            .track-selection {
+                gap: 20px;
+                flex-wrap: wrap;
+                padding: 15px 10px;
+                font-size: 14px;
+            }
+            
+            .selection-tab.active::after {
+                width: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="show-all-files-screen">
+        <div class="tracks-container">
+            <!-- Left Column -->
+            <div class="track-column">
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+            </div>
+            
+            <!-- Right Column -->
+            <div class="track-column">
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+                <div class="track-component">
+                    <div class="track-name">Old Track Name</div>
+                </div>
+            </div>
+            
+            <!-- Third Column (dynamically populated) -->
+            <div class="track-column track-column-third">
+            </div>
+        </div>
+        
+        <!-- Track Selection Footer -->
+        <div class="track-selection">
+            <div class="selection-tab active">Track Assignment</div>
+            <div class="selection-tab">Group Assignment</div>
+            <div class="selection-tab">View Assignment</div>
+        </div>
+    </div>
+    
+    <script>
+        let allTracks = []; // Store all track components
+        let isThreeColumnMode = false;
+        
+        // Collect all track components on page load
+        function initializeTracks() {
+            const columns = document.querySelectorAll('.track-column:not(.track-column-third)');
+            allTracks = [];
+            
+            columns.forEach(column => {
+                const tracks = Array.from(column.querySelectorAll('.track-component'));
+                allTracks.push(...tracks);
+            });
+        }
+        
+        // Redistribute tracks across columns
+        function redistributeTracks(numColumns) {
+            const columns = document.querySelectorAll('.track-column');
+            const thirdColumn = document.querySelector('.track-column-third');
+            
+            // Clear all columns
+            columns.forEach(column => {
+                column.innerHTML = '';
+            });
+            
+            if (numColumns === 3) {
+                // Show third column
+                thirdColumn.style.display = 'block';
+                
+                // Distribute tracks across 3 columns
+                const tracksPerColumn = Math.ceil(allTracks.length / 3);
+                
+                for (let i = 0; i < allTracks.length; i++) {
+                    const columnIndex = Math.floor(i / tracksPerColumn);
+                    const targetColumn = columns[Math.min(columnIndex, 2)]; // Ensure we don't exceed 3 columns
+                    targetColumn.appendChild(allTracks[i]);
+                }
+            } else {
+                // Hide third column
+                thirdColumn.style.display = 'none';
+                
+                // Distribute tracks across 2 columns
+                const tracksPerColumn = Math.ceil(allTracks.length / 2);
+                
+                for (let i = 0; i < allTracks.length; i++) {
+                    const columnIndex = Math.floor(i / tracksPerColumn);
+                    const targetColumn = columns[Math.min(columnIndex, 1)]; // Ensure we don't exceed 2 columns
+                    targetColumn.appendChild(allTracks[i]);
+                }
+            }
+        }
+        
+        // Handle responsive layout changes
+        function handleResponsiveLayout() {
+            const container = document.querySelector('.tracks-container');
+            const shouldBeThreeColumns = window.innerWidth >= 1800;
+            
+            if (shouldBeThreeColumns && !isThreeColumnMode) {
+                container.classList.add('three-columns');
+                redistributeTracks(3);
+                isThreeColumnMode = true;
+            } else if (!shouldBeThreeColumns && isThreeColumnMode) {
+                container.classList.remove('three-columns');
+                redistributeTracks(2);
+                isThreeColumnMode = false;
+            }
+        }
+        
+        // Track interaction functionality
+        let currentlySelectedTrack = null;
+        
+        function setupTrackInteraction() {
+            // Add click event listeners to all track components
+            document.addEventListener('click', function(e) {
+                const trackComponent = e.target.closest('.track-component');
+                
+                if (trackComponent) {
+                    handleTrackClick(trackComponent);
+                } else {
+                    // Clicked outside any track - deselect current selection
+                    if (currentlySelectedTrack) {
+                        cancelEdit();
+                    }
+                }
+            });
+        }
+        
+        function handleTrackClick(trackComponent) {
+            // If there's already a selected track and it's different, cancel that one first
+            if (currentlySelectedTrack && currentlySelectedTrack !== trackComponent) {
+                cancelEdit();
+            }
+            
+            // Don't re-select the same track if it's already selected
+            if (currentlySelectedTrack === trackComponent) {
+                return;
+            }
+            
+            // Select this track
+            selectTrack(trackComponent);
+        }
+        
+        function selectTrack(trackComponent) {
+            // Only remove 'selected' class from all tracks, preserve 'edited' state
+            document.querySelectorAll('.track-component').forEach(track => {
+                track.classList.remove('selected');
+            });
+            
+            // Set as selected (remove edited state only from this track if it was edited)
+            trackComponent.classList.remove('edited');
+            trackComponent.classList.add('selected');
+            currentlySelectedTrack = trackComponent;
+            
+            // Get current text and create input field
+            const nameDiv = trackComponent.querySelector('.track-name');
+            const currentText = nameDiv.textContent;
+            
+            // Create input element
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'track-input';
+            input.value = currentText === 'Old Track Name' ? '' : currentText;
+            input.placeholder = 'Enter new track name';
+            
+            // Replace text with input
+            nameDiv.innerHTML = '';
+            nameDiv.appendChild(input);
+            
+            // Focus and select all text
+            input.focus();
+            input.select();
+            
+            // Handle enter key
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    confirmEdit(trackComponent, input.value.trim());
+                } else if (e.key === 'Escape') {
+                    cancelEdit();
+                }
+            });
+            
+            // Handle blur (when clicking outside the input)
+            input.addEventListener('blur', function() {
+                // Small delay to allow for other click events to process first
+                setTimeout(() => {
+                    if (currentlySelectedTrack === trackComponent) {
+                        cancelEdit();
+                    }
+                }, 100);
+            });
+        }
+        
+        function confirmEdit(trackComponent, newText) {
+            if (!trackComponent || !currentlySelectedTrack) return;
+            
+            // Set as edited state
+            trackComponent.classList.remove('selected');
+            trackComponent.classList.add('edited');
+            
+            // Update text content
+            const nameDiv = trackComponent.querySelector('.track-name');
+            nameDiv.innerHTML = '';
+            nameDiv.textContent = newText || 'Old Track Name';
+            
+            // Clear current selection
+            currentlySelectedTrack = null;
+        }
+        
+        function cancelEdit() {
+            if (!currentlySelectedTrack) return;
+            
+            // Reset to default state
+            currentlySelectedTrack.classList.remove('selected');
+            
+            // Restore original text
+            const nameDiv = currentlySelectedTrack.querySelector('.track-name');
+            nameDiv.innerHTML = '';
+            nameDiv.textContent = 'Old Track Name';
+            
+            // Clear current selection
+            currentlySelectedTrack = null;
+        }
+        
+        // Run on load and resize
+        window.addEventListener('load', () => {
+            initializeTracks();
+            handleResponsiveLayout();
+            setupTrackInteraction();
+        });
+        window.addEventListener('resize', handleResponsiveLayout);
+    </script>
+</body>
+</html>
