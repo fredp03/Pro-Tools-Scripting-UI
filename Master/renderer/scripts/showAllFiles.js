@@ -8,7 +8,8 @@ class TrackManager {
         this.trackElements = [];
         this.audioFiles = [];
         this.currentlySelectedTrack = null;
-        this.isThreeColumnMode = false;
+        this.visibleColumnCount = 2;
+        this.resizeFrame = null;
 
         this.handleDocumentClick = this.handleDocumentClick.bind(this);
         this.handleResize = this.handleResize.bind(this);
@@ -37,6 +38,8 @@ class TrackManager {
         this.columns.forEach(column => {
             this.container.appendChild(column);
         });
+
+        this.container.dataset.columns = String(this.visibleColumnCount);
     }
 
     loadAudioFiles() {
@@ -54,9 +57,8 @@ class TrackManager {
             }
 
             this.audioFiles = parsedFiles;
-            this.isThreeColumnMode = window.innerWidth >= 1800;
             this.createTrackComponents();
-            this.applyLayout(window.innerWidth);
+            this.applyLayout();
         } catch (error) {
             console.error('Error loading audio files:', error);
             this.redirectToInitialScreen();
@@ -76,27 +78,39 @@ class TrackManager {
             });
         });
 
-        this.redistributeTracks(this.isThreeColumnMode ? 3 : 2);
+        this.visibleColumnCount = this.calculateColumnCount(this.trackElements.length);
+        this.redistributeTracks(this.visibleColumnCount);
     }
 
-    redistributeTracks(columnCount) {
-        this.columns.forEach(column => {
+    redistributeTracks(requestedColumnCount) {
+        const trackCount = this.trackElements.length;
+        const availableColumns = this.columns.length;
+        const fallbackColumns = this.visibleColumnCount || 1;
+        const desiredColumns = Math.max(1, requestedColumnCount || fallbackColumns);
+        const columnCount = Math.max(
+            1,
+            Math.min(
+                desiredColumns,
+                availableColumns,
+                trackCount > 0 ? trackCount : desiredColumns
+            )
+        );
+
+        this.visibleColumnCount = columnCount;
+
+        this.columns.forEach((column, index) => {
             column.innerHTML = '';
+            column.style.display = index < columnCount ? '' : 'none';
         });
 
-        if (columnCount === 3) {
-            this.thirdColumn.style.display = 'block';
-            this.container.classList.add('three-columns');
-        } else {
-            this.thirdColumn.style.display = 'none';
-            this.container.classList.remove('three-columns');
-        }
+        this.container.classList.toggle('three-columns', columnCount === 3);
+        this.container.dataset.columns = String(columnCount);
 
-        if (this.trackElements.length === 0) {
+        if (trackCount === 0) {
             return;
         }
 
-        const perColumn = Math.ceil(this.trackElements.length / columnCount);
+        const perColumn = Math.ceil(trackCount / columnCount);
         this.trackElements.forEach((track, index) => {
             const columnIndex = Math.min(Math.floor(index / perColumn), columnCount - 1);
             const targetColumn = this.columns[columnIndex];
@@ -104,19 +118,47 @@ class TrackManager {
         });
     }
 
-    applyLayout(viewportWidth) {
-        const shouldUseThreeColumns = viewportWidth >= 1800;
+    calculateColumnCount(trackCount = this.trackElements.length) {
+        const { width } = this.container.getBoundingClientRect();
+        const availableColumns = this.columns.length;
+        const fallback = Math.max(Math.min(trackCount || this.visibleColumnCount || 1, availableColumns), 1);
 
-        if (shouldUseThreeColumns !== this.isThreeColumnMode) {
-            this.isThreeColumnMode = shouldUseThreeColumns;
-            this.redistributeTracks(this.isThreeColumnMode ? 3 : 2);
-        } else if (this.trackElements.length === 0) {
-            this.redistributeTracks(this.isThreeColumnMode ? 3 : 2);
+        if (!width) {
+            return fallback;
+        }
+
+        let columnCount = 1;
+
+        if (width >= 960) {
+            columnCount = 3;
+        } else if (width >= 640) {
+            columnCount = 2;
+        }
+
+        if (trackCount > 0) {
+            columnCount = Math.min(columnCount, trackCount);
+        }
+
+        return Math.max(1, Math.min(columnCount, availableColumns));
+    }
+
+    applyLayout() {
+        const newColumnCount = this.calculateColumnCount();
+
+        if (newColumnCount !== this.visibleColumnCount || this.trackElements.length === 0) {
+            this.redistributeTracks(newColumnCount);
         }
     }
 
     handleResize() {
-        this.applyLayout(window.innerWidth);
+        if (this.resizeFrame) {
+            cancelAnimationFrame(this.resizeFrame);
+        }
+
+        this.resizeFrame = requestAnimationFrame(() => {
+            this.resizeFrame = null;
+            this.applyLayout();
+        });
     }
 
     handleDocumentClick(event) {
